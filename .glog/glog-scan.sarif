@@ -1,0 +1,132 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Glog.AI",
+          "organization": "Glog.AI",
+          "fullName": "Glog, Making software more secure",
+          "version": "1.0.0",
+          "semanticVersion": "1.0.0",
+          "informationUri": "https://www.glog.ai",
+          "rules": [
+            {
+              "id": "glog-faa7b6f4-f1f0-4144-b73d-8c67a9d53b82",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe `strncpy` function in C++ is a common source of vulnerabilities due to its potential to cause buffer overflow. This function copies a specified number of characters from the source string to the destination string. If the source string is longer than the specified number of characters, the function does not append a null character to the destination string, which can lead to buffer overflow.\n\nBuffer overflow vulnerabilities can lead to various security issues, such as data corruption, crashes, and code execution. This is because overflowing the buffer can overwrite adjacent memory, potentially affecting other variables or even executable code.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to use safer string handling functions that automatically handle the null termination and prevent buffer overflow. In C++, this can be achieved by using the `std::string` class or the `strlcpy` function.\n\n## Source Code Fix Recommendation\n\nReplace the `strncpy` function with `strlcpy` or use `std::string`. Here is an example of how to do it:\n\n```cpp\n#include <string>\n\nstd::string source = \"source string\";\nstd::string destination = source;\n```\n\nOr:\n\n```cpp\n#include <cstring>\n\nchar destination[max_size];\nstrlcpy(destination, source, max_size);\n```\n\n## Library Dependencies\n\nThe code example requires the `<string>` library for `std::string` and the `<cstring>` library for `strlcpy`.\n\n## References\n\n- [OWASP C++ Secure Coding Practices](https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html)\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n\nPlease note that the availability of `strlcpy` function depends on the platform. It's not part of the C++ standard library and may not be available on all platforms. Always make sure to use platform-independent and secure functions when writing portable code."
+              },
+              "properties": {
+                "tags": [
+                  "DS111237"
+                ]
+              }
+            }
+          ],
+          "language": "en-US",
+          "contents": [
+            "localizedData",
+            "nonLocalizedData"
+          ],
+          "isComprehensive": false
+        }
+      },
+      "language": "en-US",
+      "results": [
+        {
+          "ruleId": "glog-faa7b6f4-f1f0-4144-b73d-8c67a9d53b82",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "\"Detected Use of Prohibited C Function (strncpy)\""
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sdk/include/hipdnn_sdk/utilities/string_util.hpp"
+                },
+                "region": {
+                  "startLine": 19,
+                  "startColumn": 9,
+                  "endLine": 19,
+                  "endColumn": 51,
+                  "charOffset": 383,
+                  "charLength": 42,
+                  "snippet": {
+                    "text": "strncpy(destination, source, max_size - 1)",
+                    "rendered": {
+                      "text": "strncpy(destination, source, max_size - 1)",
+                      "markdown": "`strncpy(destination, source, max_size - 1)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "sdk/include/hipdnn_sdk/utilities/string_util.hpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 383,
+                        "charLength": 42
+                      },
+                      "insertedContent": {
+                        "text": "strcpy_s(destination,  max_size - 1,  source)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "sdk/include/hipdnn_sdk/utilities/string_util.hpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 383,
+                        "charLength": 42
+                      },
+                      "insertedContent": {
+                        "text": "strlcpy(destination,  source,  max_size - 1)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.BannedFunction"
+            ]
+          }
+        }
+      ],
+      "newlineSequences": [
+        "\r\n",
+        "\n"
+      ]
+    }
+  ]
+}
