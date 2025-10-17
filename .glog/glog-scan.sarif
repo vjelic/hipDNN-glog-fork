@@ -12,18 +12,6 @@
           "informationUri": "https://www.glog.ai",
           "rules": [
             {
-              "id": "08d83bd6-2f53-38ea-a199-365fbe5b4150",
-              "help": {
-                "text": "",
-                "markdown": "## Description\n\n\"Detected Prohibited C Function\" vulnerability refers to the use of insecure C library functions in C++ code. These functions are often prone to buffer overflow attacks, format string vulnerabilities, or other types of security issues. In the provided code snippet, the function `std::getenv` is used, which can lead to security vulnerabilities. This function returns a pointer to a string that represents the value for the specified environment variable. An attacker could potentially modify this environment variable, leading to unexpected behavior in the program.\n\n## Mitigation Advice\n\nAvoid using insecure C library functions. Instead, use safer alternatives provided by the C++ Standard Library. In this case, consider using a method that does not involve environment variables to set the log level. If you must use environment variables, ensure that your program validates and sanitizes the input.\n\n## Source Code Fix Recommendation\n\n```cpp\n// Instead of using std::getenv, consider using a configuration file or command line arguments to set the log level.\n// If you must use an environment variable, validate and sanitize the input.\n\nconst char* log_level_env = std::getenv(\"HIPDNN_LOG_LEVEL\");\n\nif (log_level_env != nullptr) {\n    std::string log_level = log_level_env;\n    // Validate and sanitize log_level before using it.\n}\n```\n\n## Library Dependencies\n\nThe code example requires the following library:\n\n- `<cstdlib>`: This is a standard library in C++ that provides general purpose functions including process control, dynamic memory allocation, random numbers, and others.\n\n## References\n\n- [OWASP C++](https://owasp.org/www-community/attacks/Buffer_overflow_attack)\n- [CWE-676: Use of Potentially Dangerous Function](https://cwe.mitre.org/data/definitions/676.html)"
-              },
-              "properties": {
-                "tags": [
-                  "DS154189"
-                ]
-              }
-            },
-            {
               "id": "8bf0bb08-c7e3-37be-9407-994db8e810c2",
               "help": {
                 "text": "",
@@ -36,10 +24,10 @@
               }
             },
             {
-              "id": "35fb0073-6952-35c9-9f40-42c41e508370",
+              "id": "08d83bd6-2f53-38ea-a199-365fbe5b4150",
               "help": {
                 "text": "",
-                "markdown": "## Description\n\n\"Detected Prohibited C Function\" vulnerability in C++ refers to the use of insecure C library functions that can lead to various security issues such as buffer overflows, format string vulnerabilities, integer overflows, etc. In the provided code snippet, the function `std::getenv` is used, which can lead to security vulnerabilities. This function returns a pointer to a string that is stored in an environment block. The problem is that the returned string can be overwritten by subsequent calls to `std::getenv`, `std::setenv`, or `std::putenv`.\n\n## Mitigation Advice\n\nAvoid using `std::getenv` function. Instead, use secure alternatives that are thread-safe and do not have the risk of being overwritten. If you must use environment variables, consider copying the returned string to a local buffer immediately after calling `std::getenv`.\n\n## Source Code Fix Recommendation\n\n```cpp\nchar* log_file_path_temp = std::getenv(\"HIPDNN_LOG_FILE\");\nif (log_file_path_temp != nullptr) {\n    std::string log_file_path = log_file_path_temp;\n    // Use log_file_path\n} else {\n    // Handle error\n}\n```\n\n## Library Dependencies\n\nThe code example requires the following library dependencies:\n\n- `<cstdlib>`: For `std::getenv` function.\n\n## References\n\n- [OWASP C++ Secure Coding Practices](https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html)\n- [CWE-676: Use of Potentially Dangerous Function](https://cwe.mitre.org/data/definitions/676.html)\n\nPlease note that the links provided are active and accessible to anonymous users at the time of writing this report."
+                "markdown": "## Description\n\n\"Detected Prohibited C Function\" vulnerability refers to the use of insecure C library functions in C++ code. These functions are often prone to buffer overflow attacks, format string vulnerabilities, or other types of security issues. In the provided code snippet, the function `std::getenv` is used, which can lead to security vulnerabilities. This function returns a pointer to a string that represents the value for the specified environment variable. An attacker could potentially modify this environment variable, leading to unexpected behavior in the program.\n\n## Mitigation Advice\n\nAvoid using insecure C library functions. Instead, use safer alternatives provided by the C++ Standard Library. In this case, consider using a method that does not involve environment variables to set the log level. If you must use environment variables, ensure that your program validates and sanitizes the input.\n\n## Source Code Fix Recommendation\n\n```cpp\n// Instead of using std::getenv, consider using a configuration file or command line arguments to set the log level.\n// If you must use an environment variable, validate and sanitize the input.\n\nconst char* log_level_env = std::getenv(\"HIPDNN_LOG_LEVEL\");\n\nif (log_level_env != nullptr) {\n    std::string log_level = log_level_env;\n    // Validate and sanitize log_level before using it.\n}\n```\n\n## Library Dependencies\n\nThe code example requires the following library:\n\n- `<cstdlib>`: This is a standard library in C++ that provides general purpose functions including process control, dynamic memory allocation, random numbers, and others.\n\n## References\n\n- [OWASP C++](https://owasp.org/www-community/attacks/Buffer_overflow_attack)\n- [CWE-676: Use of Potentially Dangerous Function](https://cwe.mitre.org/data/definitions/676.html)"
               },
               "properties": {
                 "tags": [
@@ -70,46 +58,6 @@
       },
       "language": "en-US",
       "results": [
-        {
-          "ruleId": "08d83bd6-2f53-38ea-a199-365fbe5b4150",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Detected Prohibited C Function"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "sdk/include/hipdnn_sdk/test_utilities/logging_utils.hpp"
-                },
-                "region": {
-                  "startLine": 43,
-                  "startColumn": 37,
-                  "endLine": 43,
-                  "endColumn": 43,
-                  "charOffset": 924,
-                  "charLength": 6,
-                  "snippet": {
-                    "text": "getenv",
-                    "rendered": {
-                      "text": "getenv",
-                      "markdown": "`getenv`"
-                    }
-                  },
-                  "sourceLanguage": "cpp"
-                }
-              }
-            }
-          ],
-          "properties": {
-            "DevSkimSeverity": "Moderate",
-            "DevSkimConfidence": "High",
-            "tags": [
-              "API.DangerousAPI.BannedFunction"
-            ]
-          }
-        },
         {
           "ruleId": "8bf0bb08-c7e3-37be-9407-994db8e810c2",
           "kind": "fail",
@@ -169,6 +117,46 @@
                   "endLine": 45,
                   "endColumn": 47,
                   "charOffset": 1135,
+                  "charLength": 6,
+                  "snippet": {
+                    "text": "getenv",
+                    "rendered": {
+                      "text": "getenv",
+                      "markdown": "`getenv`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Moderate",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.BannedFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "08d83bd6-2f53-38ea-a199-365fbe5b4150",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Detected Prohibited C Function"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sdk/include/hipdnn_sdk/test_utilities/logging_utils.hpp"
+                },
+                "region": {
+                  "startLine": 43,
+                  "startColumn": 37,
+                  "endLine": 43,
+                  "endColumn": 43,
+                  "charOffset": 924,
                   "charLength": 6,
                   "snippet": {
                     "text": "getenv",
