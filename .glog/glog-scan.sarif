@@ -12,34 +12,10 @@
           "informationUri": "https://www.glog.ai",
           "rules": [
             {
-              "id": "8bf0bb08-c7e3-37be-9407-994db8e810c2",
-              "help": {
-                "text": "",
-                "markdown": "## Description\n\n\"Detected Prohibited C Function\" vulnerability refers to the use of insecure C library functions in C++ code. These functions are often prone to buffer overflow attacks, format string vulnerabilities, or other types of security issues. In the provided code snippet, the `std::getenv` function is used, which can lead to security vulnerabilities. This function returns a pointer to a string that is stored in an environment block associated with the process. If the environment variable is changed, the pointer returned by `std::getenv` may become invalid.\n\n## Mitigation Advice\n\nAvoid using `std::getenv` function as it is not thread-safe and can lead to race conditions. Instead, consider using safer alternatives that are thread-safe and do not have the same vulnerabilities. \n\n## Source Code Fix Recommendation\n\n```cpp\nchar* log_level;\nsize_t requiredSize;\n\ngetenv_s(&requiredSize, NULL, 0, \"HIPDNN_LOG_LEVEL\");\nif (requiredSize == 0)\n{\n    printf(\"HIPDNN_LOG_LEVEL doesn't exist!\\n\");\n    exit(1);\n}\n\nlog_level = (char*) malloc(requiredSize * sizeof(char));\nif (!log_level)\n{\n    printf(\"Failed to allocate memory!\\n\");\n    exit(1);\n}\n\ngetenv_s(&requiredSize, log_level, requiredSize, \"HIPDNN_LOG_LEVEL\");\n```\n\n## Library Dependencies\n\nThe code example requires the following libraries:\n\n- `<cstdlib>`: For `std::getenv` function.\n- `<cstdio>`: For `printf` function.\n- `<stdlib.h>`: For `exit` function.\n\n## References\n\n- [OWASP C++](https://owasp.org/www-pdf-archive/OWASP_SCP_v2.pdf)\n- [CWE-676: Use of Potentially Dangerous Function](https://cwe.mitre.org/data/definitions/676.html)\n\nPlease note that the links provided are valid and active for anonymous users at the time of writing this report."
-              },
-              "properties": {
-                "tags": [
-                  "DS154189"
-                ]
-              }
-            },
-            {
-              "id": "08d83bd6-2f53-38ea-a199-365fbe5b4150",
-              "help": {
-                "text": "",
-                "markdown": "## Description\n\n\"Detected Prohibited C Function\" vulnerability refers to the use of insecure C library functions in C++ code. These functions are often prone to buffer overflow attacks, format string vulnerabilities, or other types of security issues. In the provided code snippet, the function `std::getenv` is used, which can lead to security vulnerabilities. This function returns a pointer to a string that represents the value for the specified environment variable. An attacker could potentially modify this environment variable, leading to unexpected behavior in the program.\n\n## Mitigation Advice\n\nAvoid using insecure C library functions. Instead, use safer alternatives provided by the C++ Standard Library. In this case, consider using a method that does not involve environment variables to set the log level. If you must use environment variables, ensure that your program validates and sanitizes the input.\n\n## Source Code Fix Recommendation\n\n```cpp\n// Instead of using std::getenv, consider using a configuration file or command line arguments to set the log level.\n// If you must use an environment variable, validate and sanitize the input.\n\nconst char* log_level_env = std::getenv(\"HIPDNN_LOG_LEVEL\");\n\nif (log_level_env != nullptr) {\n    std::string log_level = log_level_env;\n    // Validate and sanitize log_level before using it.\n}\n```\n\n## Library Dependencies\n\nThe code example requires the following library:\n\n- `<cstdlib>`: This is a standard library in C++ that provides general purpose functions including process control, dynamic memory allocation, random numbers, and others.\n\n## References\n\n- [OWASP C++](https://owasp.org/www-community/attacks/Buffer_overflow_attack)\n- [CWE-676: Use of Potentially Dangerous Function](https://cwe.mitre.org/data/definitions/676.html)"
-              },
-              "properties": {
-                "tags": [
-                  "DS154189"
-                ]
-              }
-            },
-            {
               "id": "87ba04a6-85be-315b-99f7-49960e069b79",
               "help": {
                 "text": "",
-                "markdown": "This finding is classified as a genuine vulnerability because the analysis detected a risk of undefined behavior due to possible overlap between the source and destination memory regions in the call to the string copy function. The dataflow analysis indicates that the source and destination may refer to overlapping memory, which is not allowed by the standard for this function and can result in unpredictable program behavior. The destination is a character pointer, and there is no evidence that the length argument is derived from the actual capacity of the destination buffer. Although the code ensures a null terminator is written after the copy, this does not mitigate the risk of undefined behavior from overlapping memory regions. The source and destination are both confirmed to be non-null, but the overlap risk remains the primary concern.\n\n## In Context Remediation\nTo prevent undefined behavior when copying strings where the source and destination may overlap, use a memory-safe function that supports overlapping regions. For character buffers, replace the string copy function with a memory move function, which is designed to handle overlapping memory safely. For example, replace the original call with:\n\n```cpp\nstd::memmove(destination, source, max_size - 1);\nif (max_size > 0) {\n    destination[max_size - 1] = '\\0';\n}\n```\nThis ensures that the copy operation is safe even if the source and destination overlap, and the destination buffer is properly null-terminated. Always verify that the size argument does not exceed the actual capacity of the destination buffer to avoid buffer overflows.\n\n## References\n- [OWASP C-Based Toolchain Hardening Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html)\n- [CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer](https://cwe.mitre.org/data/definitions/119.html)\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n- [CWE-787: Out-of-bounds Write](https://cwe.mitre.org/data/definitions/787.html)\n- [OWASP Buffer Overflow](https://owasp.org/www-community/vulnerabilities/Buffer_Overflow)\n\n___\n"
+                "markdown": "This finding is classified as a genuine vulnerability because the analysis identified a risk of undefined behavior due to possible overlap between the source and destination buffers in the call to the string copy function. The destination and source are both variables, and dataflow analysis suggests that they may refer to overlapping memory regions. The use of the string copy function in this context is unsafe, as it does not handle overlapping memory correctly, which can lead to unpredictable program behavior or security issues. There is no evidence that the source or destination pointers are null at the call site, and the code does not appear to use the destination's capacity to determine the copy length. Additionally, there is no explicit guard to ensure that the source and destination do not overlap. The presence of an explicit null-terminator assignment after the copy does not mitigate the undefined behavior risk. Therefore, this is a high-confidence, actionable issue that should be addressed.\n\n## In Context Remediation 1\nBefore performing the string copy, ensure that the source and destination buffers do not overlap. You can add a runtime check to verify that the memory regions are distinct:\n\n```cpp\nif ((destination + (max_size - 1) <= source) || (source + (max_size - 1) <= destination)) {\n    std::strncpy(destination, source, max_size - 1);\n    destination[max_size - 1] = '\\0';\n} else {\n    // Handle overlap case appropriately, e.g., use memmove or log an error\n}\n```\nThis check ensures that the memory regions do not overlap before calling the string copy function. If overlap is detected, handle it safely according to your application's requirements.\n\n## In Context Remediation 2\nIf overlapping memory regions are possible and must be handled, use a memory-safe function that supports overlapping regions, such as memmove. Replace the string copy with a call to memmove, and ensure null-termination:\n\n```cpp\nsize_t copy_len = max_size - 1;\nmemmove(destination, source, copy_len);\ndestination[copy_len] = '\\0';\n```\nThis approach safely copies the data even if the source and destination overlap, and ensures the destination buffer is null-terminated.\n\n## References\n- [OWASP C-Based Toolchain Hardening Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html)\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n- [CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer](https://cwe.mitre.org/data/definitions/119.html)\n- [CWE-787: Out-of-bounds Write](https://cwe.mitre.org/data/definitions/787.html)\n- [OWASP Buffer Overflow](https://owasp.org/www-community/vulnerabilities/Buffer_Overflow)\n\n___\n"
               },
               "properties": {
                 "tags": [
@@ -58,126 +34,6 @@
       },
       "language": "en-US",
       "results": [
-        {
-          "ruleId": "8bf0bb08-c7e3-37be-9407-994db8e810c2",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Detected Prohibited C Function"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "backend/src/logging/logging.cpp"
-                },
-                "region": {
-                  "startLine": 44,
-                  "startColumn": 37,
-                  "endLine": 44,
-                  "endColumn": 43,
-                  "charOffset": 1066,
-                  "charLength": 6,
-                  "snippet": {
-                    "text": "getenv",
-                    "rendered": {
-                      "text": "getenv",
-                      "markdown": "`getenv`"
-                    }
-                  },
-                  "sourceLanguage": "cpp"
-                }
-              }
-            }
-          ],
-          "properties": {
-            "DevSkimSeverity": "Moderate",
-            "DevSkimConfidence": "High",
-            "tags": [
-              "API.DangerousAPI.BannedFunction"
-            ]
-          }
-        },
-        {
-          "ruleId": "35fb0073-6952-35c9-9f40-42c41e508370",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Detected Prohibited C Function"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "backend/src/logging/logging.cpp"
-                },
-                "region": {
-                  "startLine": 45,
-                  "startColumn": 41,
-                  "endLine": 45,
-                  "endColumn": 47,
-                  "charOffset": 1135,
-                  "charLength": 6,
-                  "snippet": {
-                    "text": "getenv",
-                    "rendered": {
-                      "text": "getenv",
-                      "markdown": "`getenv`"
-                    }
-                  },
-                  "sourceLanguage": "cpp"
-                }
-              }
-            }
-          ],
-          "properties": {
-            "DevSkimSeverity": "Moderate",
-            "DevSkimConfidence": "High",
-            "tags": [
-              "API.DangerousAPI.BannedFunction"
-            ]
-          }
-        },
-        {
-          "ruleId": "08d83bd6-2f53-38ea-a199-365fbe5b4150",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Detected Prohibited C Function"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "sdk/include/hipdnn_sdk/test_utilities/logging_utils.hpp"
-                },
-                "region": {
-                  "startLine": 43,
-                  "startColumn": 37,
-                  "endLine": 43,
-                  "endColumn": 43,
-                  "charOffset": 924,
-                  "charLength": 6,
-                  "snippet": {
-                    "text": "getenv",
-                    "rendered": {
-                      "text": "getenv",
-                      "markdown": "`getenv`"
-                    }
-                  },
-                  "sourceLanguage": "cpp"
-                }
-              }
-            }
-          ],
-          "properties": {
-            "DevSkimSeverity": "Moderate",
-            "DevSkimConfidence": "High",
-            "tags": [
-              "API.DangerousAPI.BannedFunction"
-            ]
-          }
-        },
         {
           "ruleId": "87ba04a6-85be-315b-99f7-49960e069b79",
           "kind": "fail",
